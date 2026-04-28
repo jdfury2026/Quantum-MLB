@@ -4,8 +4,28 @@ from pybaseball import pitching_stats, batting_stats, schedule_and_record
 from datetime import datetime
 
 class QuantumEngine:
-    def __init__(self):
-        self.iterations = 5000000 # El estándar de oro: 5M
+  from pybaseball import schedule_and_record, statcast_pitcher, mlb_api
+import datetime
+
+def get_todays_games(self):
+    """Obtiene los juegos, estadios y pitchers probables para hoy"""
+    today = datetime.datetime.now().strftime('%Y-%m-%d')
+    try:
+        # Consultamos la API oficial de MLB a través de pybaseball
+        schedule = mlb_api.get_schedule(date=today)
+        games_today = []
+        
+        for game in schedule:
+            games_today.append({
+                "game_id": game['game_pk'],
+                "home": game['home_name'],
+                "away": game['away_name'],
+                "venue": game['venue_name'],
+                "status": game['status']
+            })
+        return games_today
+    except:
+        return []
         
     # --- MÓDULO: MOMENTUM (Inercia de Racha) ---
     def get_momentum_multiplier(self, team_abbreviation, year=2026):
