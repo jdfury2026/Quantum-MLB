@@ -6,11 +6,19 @@ st.set_page_config(page_title="Quantum MLB Analytics", layout="wide")
 st.title("⚾ Quantum MLB: Simulador de Alta Fidelidad")
 st.markdown("---")
 
-# 2. Panel Lateral de Configuración
-st.sidebar.header("Configuración del Encuentro")
-home_team = st.sidebar.selectbox("Equipo Local", ["NYY", "BOS", "LAD", "SF", "HOU", "TEX"])
-away_team = st.sidebar.selectbox("Equipo Visitante", ["BOS", "NYY", "SF", "LAD", "TEX", "HOU"])
-ou_line = st.sidebar.number_input("Línea Over/Under", value=8.5, step=0.5)
+engine = QuantumEngine()
+juegos_hoy = engine.get_todays_games()
+
+if juegos_hoy:
+    opciones = [f"{j['away']} @ {j['home']}" for j in juegos_hoy]
+    seleccion = st.sidebar.selectbox("Selecciona el juego de HOY", opciones)
+    
+    # Extraer los nombres para el motor
+    game_idx = opciones.index(seleccion)
+    home_team = juegos_hoy[game_idx]['home']
+    away_team = juegos_hoy[game_idx]['away']
+else:
+    st.sidebar.warning("No se encontraron juegos programados para hoy.")
 
 st.sidebar.markdown("---")
 st.sidebar.write("⚡ **Motor:** 5,000,000 Iteraciones")
