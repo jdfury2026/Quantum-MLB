@@ -1,10 +1,15 @@
+import sys
 import pandas as pd
 import numpy as np
 import datetime
-import pybaseball as pb # Importación simplificada
 
-# Forzamos la carga de las funciones específicas
-from pybaseball import schedule_and_record, mlb_api
+# Forzamos al sistema a buscar las librerías instaladas
+try:
+    from pybaseball import schedule_and_record, mlb_api
+except ImportError:
+    import subprocess
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "pybaseball"])
+    from pybaseball import schedule_and_record, mlb_api
 
 class QuantumEngine:
     def __init__(self):
