@@ -1,75 +1,47 @@
-import sys
 import pandas as pd
 import numpy as np
 import datetime
+import sys
 
-# Forzamos al sistema a buscar las librerías instaladas
+# Intentamos importar pybaseball de forma segura
 try:
     from pybaseball import schedule_and_record, mlb_api
 except ImportError:
-    import subprocess
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "pybaseball"])
-    from pybaseball import schedule_and_record, mlb_api
+    pass
 
-class QuantumEngine:
-    def __init__(self):
-        self.iterations = 5000000
 class QuantumEngine:
     def __init__(self):
         self.iterations = 5000000 
+
+    def get_momentum_multiplier(self, team):
+        # Función simplificada para evitar errores de conexión iniciales
+        return 1.0
+
+    def run_monte_carlo(self, home_team, away_team, ou_line):
+        # 1. Definir expectativas de carreras (Lambdas)
+        # En una versión futura, estos datos vendrán de los stats reales de hoy
+        home_lambda = 4.5
+        away_lambda = 4.2
         
-    def get_todays_games(self):
-        """Obtiene los juegos y pitchers probables para hoy"""
-        today = datetime.datetime.now().strftime('%Y-%m-%d')
-        try:
-            # Consultamos la API oficial de MLB
-            schedule = mlb_api.get_schedule(date=today)
-            games_today = []
-            for game in schedule:
-                games_today.append({
-                    "game_id": game.get('game_pk'),
-                    "home": game.get('home_name'),
-                    "away": game.get('away_name'),
-                    "venue": game.get('venue_name'),
-                    "status": game.get('status')
-                })
-            return games_today
-        except Exception as e:
-            print(f"Error en API: {e}")
-            return []
-
-    def get_momentum_multiplier(self, team_abbreviation, year=2026):
-        try:
-            data = schedule_and_record(year, team_abbreviation).tail(10)
-            results = [1 if x == 'W' else 0 for x in data['W/L']]
-            if not results: return 1.0
-            weights = np.arange(1, len(results) + 1)
-            momentum_idx = np.sum(np.array(results) * weights) / np.sum(weights)
-            return 1 + (momentum_idx - 0.5) * 0.10
-        except:
-            return 1.0
-
-    def run_monte_carlo(self, home_team, away_team, over_under_line):
-        # Lógica de simulación 5M
-        home_final_lambda = 4.5 * self.get_momentum_multiplier(home_team)
-        away_final_lambda = 4.1 * self.get_momentum_multiplier(away_team)
-
-        home_sim = np.random.poisson(home_final_lambda, self.iterations)
-        away_sim = np.random.poisson(away_final_lambda, self.iterations)
-
-        home_wins = np.sum(home_sim > away_sim)
+        # 2. Generación de 5,000,000 de juegos simultáneos usando NumPy (Velocidad Luz)
+        home_scores = np.random.poisson(home_lambda, self.iterations)
+        away_scores = np.random.poisson(away_lambda, self.iterations)
+        
+        # 3. Cálculos de Probabilidad
+        home_wins = np.sum(home_scores > away_scores)
         prob_ml_home = (home_wins / self.iterations) * 100
-        home_covers = np.sum((home_sim - 1.5) > away_sim)
+        
+        # Probabilidad de cubrir Spread -1.5
+        home_covers = np.sum((home_scores - 1.5) > away_scores)
         prob_spread_home = (home_covers / self.iterations) * 100
-        total_runs = home_sim + away_sim
-        prob_over = (np.sum(total_runs > over_under_line) / self.iterations) * 100
+        
+        # Probabilidad de Over (Altas)
+        total_runs = home_scores + away_scores
+        prob_over = (np.sum(total_runs > ou_line) / self.iterations) * 100
 
         return {
-            "home_team": home_team,
-            "away_team": away_team,
             "ml_home": round(prob_ml_home, 2),
             "ml_away": round(100 - prob_ml_home, 2),
             "spread_home_minus_1_5": round(prob_spread_home, 2),
-            "over_prob": round(prob_over, 2),
-            "ou_line": over_under_line
+            "over_prob": round(prob_over, 2)
         }
