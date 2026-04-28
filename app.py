@@ -1,53 +1,86 @@
 import streamlit as st
 from engine import QuantumEngine
 
-# Configuración básica de la interfaz
-st.set_page_config(page_title="Quantum MLB Analytics", layout="wide")
+# 1. Configuración de la página
+st.set_page_config(
+    page_title="Quantum MLB Analytics",
+    page_icon="⚾",
+    layout="wide"
+)
 
-st.title("⚾ Quantum MLB Analytics")
-st.subheader("Simulador Quirúrgico de 5,000,000 de Iteraciones")
+# Estilo personalizado para mejorar la visualización
+st.markdown("""
+    <style>
+    .main {
+        padding: 2rem;
+    }
+    .stMetric {
+        background-color: #f0f2f6;
+        padding: 15px;
+        border-radius: 10px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+st.title("⚾ Quantum MLB: Simulador de Alta Fidelidad")
+st.subheader("Análisis Probabilístico basado en 5,000,000 de Iteraciones")
 st.write("---")
 
-# Panel de entrada de datos
+# 2. Panel Lateral de Configuración
 with st.sidebar:
-    st.header("Parámetros del Juego")
-    home_t = st.selectbox("Equipo Local", ["NYY", "LAD", "HOU", "ATL", "PHI", "TEX"])
-    away_t = st.selectbox("Equipo Visitante", ["BOS", "SF", "SEA", "NYM", "CHC", "TOR"])
-    linea_ou = st.number_input("Línea de Carreras (O/U)", value=8.5, step=0.5)
+    st.header("Configuración del Encuentro")
+    home_t = st.selectbox("Equipo Local", ["NYY", "LAD", "HOU", "ATL", "PHI", "TEX", "BOS", "CHC"], key="home_team")
+    away_t = st.selectbox("Equipo Visitante", ["BOS", "SF", "SEA", "NYM", "TOR", "SD", "NYY", "LAD"], key="away_team")
+    linea_ou = st.number_input("Línea de Carreras (Over/Under)", value=8.5, step=0.5)
     st.write("---")
-    st.caption("Motor de simulación Monte Carlo v2.0")
+    st.info("💡 Este simulador utiliza un motor Monte Carlo para proyectar resultados tras 5 millones de escenarios posibles.")
 
-# Botón de ejecución y área de resultados
+# 3. Lógica Principal y Despliegue de Resultados
 if st.button('🚀 EJECUTAR ANÁLISIS CUÁNTICO', use_container_width=True):
-    # Creamos un contenedor limpio para los resultados
+    # Contenedor para agrupar visualmente los resultados
     resultado_area = st.container(border=True)
     
-    with st.spinner('Procesando 5,000,000 de escenarios...'):
+    with st.spinner('Calculando escenarios cuánticos...'):
         try:
-            # Ejecutamos el motor
+            # Ejecutamos el motor de simulación
             engine = QuantumEngine()
             res = engine.run_monte_carlo(home_t, away_t, linea_ou)
             
-            # Mostramos los datos de forma organizada
             with resultado_area:
-                st.write(f"### Proyecciones Finales: {away_t} vs {home_t}")
-                col1, col2, col3 = st.columns(3)
+                st.write(f"## 📊 Pronóstico Final: {away_t} vs {home_t}")
                 
-                with col1:
-                    st.metric("Prob. Victoria (Local)", f"{res['ml_home']}%")
+                # SECCIÓN 1: GANADOR DIRECTO (MONEY LINE)
+                st.markdown("### 🏆 Probabilidad de Victoria (Money Line)")
+                col_away, col_home = st.columns(2)
+                
+                with col_away:
+                    st.metric(label=f"Visitante: {away_t}", value=f"{res['ml_away']}%")
+                    st.progress(res['ml_away']/100)
+                    st.caption(f"Probabilidad de triunfo para {away_t}")
+                
+                with col_home:
+                    st.metric(label=f"Local: {home_t}", value=f"{res['ml_home']}%")
                     st.progress(res['ml_home']/100)
+                    st.caption(f"Probabilidad de triunfo para {home_t}")
                 
-                with col2:
-                    st.metric("Cubre Spread (-1.5)", f"{res['spread_home_minus_1_5']}%")
-                    st.progress(res['spread_home_minus_1_5']/100)
+                st.write("---")
+                
+                # SECCIÓN 2: MERCADOS ESPECIALES (SPREAD Y TOTALES)
+                col_spread, col_total = st.columns(2)
+                
+                with col_spread:
+                    st.markdown(f"### 🏟️ Hándicap (Spread -1.5)")
+                    st.metric(f"Cubre {home_t}", f"{res['spread_home_minus_1_5']}%")
+                    st.write(f"Probabilidad de que **{home_t}** gane por una diferencia mayor a 1.5 carreras.")
                     
-                with col3:
-                    st.metric(f"Altas / Over ({linea_ou})", f"{res['over_prob']}%")
-                    st.progress(res['over_prob']/100)
+                with col_total:
+                    st.markdown(f"### 📈 Totales (O/U {linea_ou})")
+                    st.metric("Probabilidad de ALTAS (Over)", f"{res['over_prob']}%")
+                    st.write(f"Probabilidad de que el marcador total supere las **{linea_ou}** carreras.")
                 
-                st.success("Cálculo completado sin errores de interfaz.")
+                st.success(f"✅ Simulación de 5,000,000 de juegos completada con éxito.")
                 
         except Exception as e:
-            st.error(f"Falla técnica en el motor: {str(e)}")
+            st.error(f"Se detectó un error en el motor de cálculo: {str(e)}")
 else:
-    st.info("Configura los equipos en la izquierda y presiona el botón para iniciar.")
+    st.info("Ajusta los equipos en el menú lateral y presiona el botón para generar el pronóstico.")
