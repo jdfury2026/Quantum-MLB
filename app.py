@@ -1,52 +1,55 @@
 import streamlit as st
 from engine import QuantumEngine
 
-# 1. Configuración de la página
+# 1. Configuración de la página (Solo se ejecuta una vez)
 st.set_page_config(page_title="Quantum MLB Analytics", layout="wide")
+
+# Estilo para evitar que la interfaz se mueva bruscamente
+st.markdown("""<style> div.block-container { padding-top: 2rem; } </style>""", unsafe_allow_html=True)
+
 st.title("⚾ Quantum MLB: Simulador de Alta Fidelidad")
-st.markdown("---")
+st.write("---")
 
-# 2. Panel Lateral
-st.sidebar.header("Configuración")
-# Nota: En el futuro esto vendrá de get_todays_games, 
-# por ahora lo mantenemos simple para probar que el motor funcione.
-home_team = st.sidebar.selectbox("Equipo Local", ["NYY", "BOS", "LAD", "SF", "HOU", "TEX"])
-away_team = st.sidebar.selectbox("Equipo Visitante", ["BOS", "NYY", "SF", "LAD", "TEX", "HOU"])
-ou_line = st.sidebar.number_input("Línea Over/Under", value=8.5, step=0.5)
+# 2. Panel Lateral de Configuración
+with st.sidebar:
+    st.header("Configuración")
+    home_team = st.selectbox("Equipo Local", ["NYY", "BOS", "LAD", "SF", "HOU", "TEX"], key="home")
+    away_team = st.selectbox("Equipo Visitante", ["BOS", "NYY", "SF", "LAD", "TEX", "HOU"], key="away")
+    ou_line = st.number_input("Línea Over/Under", value=8.5, step=0.5, key="ou")
+    st.write("---")
+    st.info("⚡ Motor: 5M de Iteraciones")
 
-# 3. Lógica del Botón y Despliegue (LA VERSIÓN CORREGIDA)
-if st.button('🚀 EJECUTAR SIMULACIÓN QUIRÚRGICA'):
-    # Creamos un contenedor vacío para limpiar errores previos del navegador
-    placeholder = st.container() 
-    
-    with st.spinner('Calculando 5 millones de escenarios...'):
-        try:
-            # Llamamos al motor
-            engine = QuantumEngine()
-            res = engine.run_monte_carlo(home_team, away_team, ou_line)
-            
-            # Dibujamos TODO dentro del contenedor 'placeholder'
-            with placeholder:
-                st.header(f"Resultados: {home_team} vs {away_team}")
+# 3. Función Fragmentada (Esto evita el error de 'removeChild')
+@st.fragment
+def render_simulation():
+    if st.button('🚀 EJECUTAR SIMULACIÓN QUIRÚRGICA', use_container_width=True):
+        # Contenedor estático para evitar conflictos de nodos
+        main_container = st.container(border=True)
+        
+        with st.spinner('Procesando datos cuánticos...'):
+            try:
+                engine = QuantumEngine()
+                res = engine.run_monte_carlo(home_team, away_team, ou_line)
                 
-                col1, col2, col3 = st.columns(3)
-                
-                with col1:
-                    st.subheader("Money Line")
-                    st.metric(f"Prob. {home_team}", f"{res['ml_home']}%")
-                    st.metric(f"Prob. {away_team}", f"{res['ml_away']}%")
+                with main_container:
+                    st.subheader(f"📊 Análisis: {away_team} @ {home_team}")
+                    col1, col2, col3 = st.columns(3)
                     
-                with col2:
-                    st.subheader("Spread (-1.5)")
-                    st.metric("Probabilidad", f"{res['spread_home_minus_1_5']}%")
+                    with col1:
+                        st.metric("Money Line (Home)", f"{res['ml_home']}%")
+                        st.progress(res['ml_home']/100)
                     
-                with col3:
-                    st.subheader(f"Total (O/U {ou_line})")
-                    st.metric("Prob. Over", f"{res['over_prob']}%")
-                
-                st.success("✅ Simulación completada con éxito.")
-                
-        except Exception as e:
-            st.error(f"Hubo un error en el motor: {e}")
-else:
-    st.info("Selecciona los equipos y presiona el botón para iniciar el análisis cuántico.")
+                    with col2:
+                        st.metric("Spread (-1.5)", f"{res['spread_home_minus_1_5']}%")
+                        st.progress(res['spread_home_minus_1_5']/100)
+                        
+                    with col3:
+                        st.metric(f"Total Over {ou_line}", f"{res['over_prob']}%")
+                        st.progress(res['over_prob']/100)
+                    
+                    st.success("Cálculo estabilizado.")
+            except Exception as e:
+                st.error(f"Error en el motor: {str(e)}")
+
+# Llamamos a la función
+render_simulation()
