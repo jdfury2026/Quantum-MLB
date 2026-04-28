@@ -1,9 +1,14 @@
 import pandas as pd
 import numpy as np
 import datetime
-# Las herramientas de béisbol deben ir aquí arriba, fuera de la clase
-from pybaseball import schedule_and_record, statcast_pitcher, mlb_api
+import pybaseball as pb # Importación simplificada
 
+# Forzamos la carga de las funciones específicas
+from pybaseball import schedule_and_record, mlb_api
+
+class QuantumEngine:
+    def __init__(self):
+        self.iterations = 5000000
 class QuantumEngine:
     def __init__(self):
         self.iterations = 5000000 
