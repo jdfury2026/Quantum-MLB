@@ -4,3 +4,5 @@ numpy
 pybaseball
 xgboost
 requests
+lxml
+beautifulsoup4
