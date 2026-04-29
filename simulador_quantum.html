@@ -10,69 +10,21 @@
     <script src="https://www.gstatic.com/firebasejs/9.1.1/firebase-firestore-compat.js"></script>
 
     <style>
-        :root {
-            --quantum-blue: #00f2ff;
-            --neon-green: #39ff14;
-            --bg-dark: #05070a;
-            --glass: rgba(0, 242, 255, 0.05);
-        }
-        body {
-            background-color: var(--bg-dark);
-            color: white;
-            font-family: 'Rajdhani', sans-serif;
-            margin: 0;
-            overflow-x: hidden;
-        }
-        .header-quantum {
-            padding: 20px;
-            text-align: center;
-            border-bottom: 1px solid var(--quantum-blue);
-            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
-        }
-        .quantum-title {
-            font-family: 'Orbitron', sans-serif;
-            letter-spacing: 5px;
-            color: var(--quantum-blue);
-            text-shadow: 0 0 10px var(--quantum-blue);
-        }
-        .status-bar {
-            background: rgba(0,0,0,0.5);
-            padding: 10px;
-            text-align: center;
-            font-size: 0.8rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
+        :root { --quantum-blue: #00f2ff; --neon-green: #39ff14; --bg-dark: #05070a; --glass: rgba(0, 242, 255, 0.05); }
+        body { background-color: var(--bg-dark); color: white; font-family: 'Rajdhani', sans-serif; margin: 0; }
+        .header-quantum { padding: 20px; text-align: center; border-bottom: 1px solid var(--quantum-blue); box-shadow: 0 0 20px rgba(0, 242, 255, 0.2); }
+        .quantum-title { font-family: 'Orbitron', sans-serif; letter-spacing: 5px; color: var(--quantum-blue); text-shadow: 0 0 10px var(--quantum-blue); }
+        .status-bar { background: rgba(0,0,0,0.5); padding: 10px; text-align: center; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
         #db-status { color: var(--neon-green); font-weight: bold; }
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            padding: 20px;
-            gap: 20px;
-        }
-        .card {
-            background: var(--glass);
-            border: 1px solid rgba(0, 242, 255, 0.2);
-            border-radius: 10px;
-            padding: 20px;
-            position: relative;
-        }
-        .top3-badge {
-            position: absolute;
-            top: -10px;
-            right: 10px;
-            background: var(--quantum-blue);
-            color: black;
-            padding: 2px 10px;
-            font-family: 'Orbitron';
-            font-size: 0.7rem;
-            font-weight: bold;
-        }
+        .main-grid { display: grid; grid-template-columns: 1fr; padding: 20px; gap: 20px; }
+        .card { background: var(--glass); border: 1px solid rgba(0, 242, 255, 0.2); border-radius: 10px; padding: 20px; position: relative; }
+        .top3-badge { position: absolute; top: -10px; right: 10px; background: var(--quantum-blue); color: black; padding: 2px 10px; font-family: 'Orbitron'; font-size: 0.7rem; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="status-bar">
-        SISTEMA: <span id="db-status">CONECTANDO AL NÚCLEO...</span> | LATENCIA: 24ms | MODO: LIVE
+        SISTEMA: <span id="db-status">CONECTANDO AL NÚCLEO...</span> | MODO: LIVE
     </div>
 
     <header class="header-quantum">
@@ -81,40 +33,38 @@
 
     <div class="main-grid">
         <div class="card">
-            <div class="top3-badge">TOP 3 ALTA CONFIDENZA</div>
+            <div class="top3-badge">TOP 3 ALTA CONFIANZA</div>
             <h3 style="color: var(--quantum-blue); margin-top: 0;">PRONÓSTICO DEL DÍA</h3>
             <div id="live-data">
-                <p>Esperando datos de la MLB...</p>
-                <div style="height: 2px; background: rgba(0,242,255,0.1); margin: 15px 0;"></div>
-                <small style="color: #888;">Actualización automática cada 30 min antes de cada juego.</small>
+                <p>Sincronizando con MLB Data Center...</p>
             </div>
         </div>
 
         <div class="card" style="border-color: rgba(255,255,255,0.1);">
             <h3 style="margin-top: 0;">HISTORIAL PERPETUO</h3>
             <div id="history-list" style="color: #666;">
-                No hay registros previos en la base de datos.
+                Esperando datos de la base de datos de Jesus-M-V...
             </div>
         </div>
     </div>
 
     <script>
-        // === REEMPLAZA ESTO CON TUS DATOS DE FIREBASE ===
-      const firebaseConfig = {
-  apiKey: "AIzaSyBtBb4sfSvs0D_mmxJjz7hOWbb5FHrP6Hc",
-  authDomain: "quantummlb-7cbea.firebaseapp.com",
-  projectId: "quantummlb-7cbea",
-  storageBucket: "quantummlb-7cbea.firebasestorage.app",
-  messagingSenderId: "979372055776",
-  appId: "1:979372055776:web:f57315637f1f51b2cf0485"
-};
-        // ==============================================
+        // === AQUÍ DEBES PEGAR TUS DATOS REALES DE FIREBASE ===
+        const firebaseConfig = {
+            apiKey: "AIzaSyBtBb4sfSvs0D_mmxJjz7hOWbb5FHrP6Hc",
+            authDomain: "quantummlb-7cbea.firebaseapp.com",
+            projectId: "quantummlb-7cbea",
+            storageBucket: "quantummlb-7cbea.firebasestorage.app",
+            messagingSenderId: "979372055776",
+            appId: "1:979372055776:web:f57315637f1f51b2cf0485"
+        };
+        // ==================================================
 
         // Inicializar el Cerebro
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Verificar Conexión Real
+        // Confirmación visual de conexión
         setTimeout(() => {
             document.getElementById('db-status').innerText = "CUÁNTICO ACTIVO";
         }, 2000);
