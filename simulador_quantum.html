@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum MLB Simulator - Elite Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- ESTILOS CUÁNTICOS (CSS) --- */
+        :root {
+            --bg-deep: #0b0e11;
+            --quantum-blue: #00f2ff;
+            --quantum-purple: #8a2be2;
+            --glass: rgba(18, 18, 18, 0.85);
+            --neon-green: #39ff14;
+            --neon-red: #ff3131;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        h1, h2, .quantum-font { font-family: 'Orbitron', sans-serif; text-transform: uppercase; }
+
+        /* Fondo de Matriz Animada */
+        #matrix-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+            background: linear-gradient(0deg, rgba(0, 242, 255, 0.1) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(0, 242, 255, 0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        /* Contenedor Principal */
+        .container { padding: 20px; max-width: 1200px; margin: auto; }
+
+        /* Tarjetas de Cristal */
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
+            transition: 0.3s;
+        }
+
+        .card:hover { border-color: var(--quantum-blue); box-shadow: 0 0 25px rgba(0, 242, 255, 0.3); }
+
+        /* Barra de Probabilidad Neón */
+        .prob-bar-container {
+            background: rgba(255,255,255,0.1);
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .prob-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--quantum-purple), var(--quantum-blue));
+            box-shadow: 0 0 10px var(--quantum-blue);
+            width: 0%; transition: width 2s ease-in-out;
+        }
+
+        /* MODAL / AVISO TOP 3 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center; align-items: center;
+        }
+
+        .modal-content {
+            background: var(--glass);
+            border: 2px solid var(--quantum-blue);
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 0 50px var(--quantum-blue);
+        }
+
+        .btn-quantum {
+            background: transparent;
+            border: 1px solid var(--quantum-blue);
+            color: var(--quantum-blue);
+            padding: 10px 25px;
+            font-family: 'Orbitron';
+            cursor: pointer;
+            margin-top: 20px;
+            transition: 0.3s;
+        }
+
+        .btn-quantum:hover { background: var(--quantum-blue); color: black; }
+
+        /* Animación de Carga */
+        #loader {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; height: 100vh;
+        }
+        .scanner {
+            width: 300px; height: 2px; background: var(--quantum-blue);
+            box-shadow: 0 0 15px var(--quantum-blue);
+            animation: scan 2s infinite;
+        }
+        @keyframes scan { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(20px); } }
+
+        /* Estilo Historial (Verde/Rojo) */
+        .status-win { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); }
+        .status-loss { color: var(--neon-red); text-shadow: 0 0 5px var(--neon-red); }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="matrix-bg"></div>
+
+    <div id="loader">
+        <h2 class="quantum-font">Sincronizando Matriz Cuántica...</h2>
+        <div class="scanner"></div>
+        <p id="load-status">Analizando Variables Psicológicas (15%)...</p>
+    </div>
+
+    <div id="main-ui" class="container hidden">
+        <header style="display: flex; justify-content: space-between; align-items: center;">
+            <h1 class="quantum-font" style="color: var(--quantum-blue);">Quantum MLB Simulator</h1>
+            <div id="historial-icon" onclick="toggleHistorial()" style="cursor:pointer; font-size: 24px;">🕒</div>
+        </header>
+
+        <div id="games-grid">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>NY YANKEES</span> <span>VS</span> <span>BOSTON RED SOX</span>
+                </div>
+                <div class="prob-bar-container">
+                    <div class="prob-bar" id="bar1"></div>
+                </div>
+                <p>Confianza Quantum: <span id="val1" style="color: var(--quantum-blue);">68.5%</span></p>
+            </div>
+        </div>
+
+        <div id="historial-panel" class="card hidden">
+            <h3 class="quantum-font">Historial de Aciertos</h3>
+            <p>25/10/2023: LAD vs SF - <span class="status-win">ACERTADO (Verde)</span></p>
+            <p>24/10/2023: NYY vs HOU - <span class="status-loss">FALLIDO (Rojo)</span></p>
+        </div>
+    </div>
+
+    <div id="top3-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="quantum-font" style="color: var(--quantum-blue);">Top 3 Alta Confianza</h2>
+            <div id="picks-list" style="text-align: left; margin: 20px 0;">
+                <p>1. BOS (ML) - 69.2%</p>
+                <p>2. LAD (Under) - 64.8%</p>
+                <p>3. HOU (-1.5) - 61.5%</p>
+            </div>
+            <button class="btn-quantum" onclick="closeModal()">CONFIRMAR ALINEACIÓN DE DATOS</button>
+        </div>
+    </div>
+
+    <script>
+        /* --- CEREBRO DEL SIMULADOR (JS) --- */
+
+        // 1. Simulación de Carga
+        window.onload = () => {
+            const statuses = [
+                "Extrayendo Sabermetrics...",
+                "Calculando Factor Clutch (15%)...",
+                "Midiendo Inercia de Racha (10%)...",
+                "Sincronizando Clima en Tiempo Real...",
+                "¡Matriz Lista!"
+            ];
+            let i = 0;
+            const interval = setInterval(() => {
+                document.getElementById('load-status').innerText = statuses[i];
+                i++;
+                if(i >= statuses.length) {
+                    clearInterval(interval);
+                    showMainUI();
+                }
+            }, 800);
+        };
+
+        function showMainUI() {
+            document.getElementById('loader').classList.add('hidden');
+            document.getElementById('main-ui').classList.remove('hidden');
+            
+            // Disparar las barras de progreso
+            setTimeout(() => {
+                document.getElementById('bar1').style.width = "68.5%";
+            }, 500);
+
+            // Mostrar el Aviso Top 3 (Simulando el trigger de 30 min antes)
+            setTimeout(() => {
+                document.getElementById('top3-modal').style.display = 'flex';
+            }, 1500);
+        }
+
+        function closeModal() {
+            document.getElementById('top3-modal').style.display = 'none';
+        }
+
+        function toggleHistorial() {
+            const panel = document.getElementById('historial-panel');
+            panel.classList.toggle('hidden');
+        }
+
+        /* LÓGICA DE AUTOMATIZACIÓN (CONCEPTO):
+           Para que esto tome datos reales cada 30 min, necesitarías conectar 
+           este Front-End con un API de MLB mediante fetch() dentro de un 
+           setInterval de JavaScript.
+        */
+    </script>
+</body>
+</html>
